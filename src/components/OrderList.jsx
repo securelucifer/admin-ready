@@ -56,11 +56,22 @@ const OrderList = () => {
         }
     };
 
+    // ✅ FIXED: This resets page to 1 ONLY when status/limit filters change
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({
             ...prev,
             [key]: value,
             page: 1
+        }));
+    };
+
+    // ✅ NEW: Dedicated page changer — does NOT reset page back to 1
+    const handlePageChange = (newPage) => {
+        if (newPage < 1) return;
+        if (pagination.totalPages && newPage > pagination.totalPages) return;
+        setFilters(prev => ({
+            ...prev,
+            page: newPage
         }));
     };
 
@@ -110,7 +121,6 @@ const OrderList = () => {
     return (
         <div className="min-h-screen bg-gray-50 py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-               
 
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8">
@@ -158,7 +168,7 @@ const OrderList = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-2">Items per page</label>
                             <select
                                 value={filters.limit}
-                                onChange={(e) => handleFilterChange('limit', e.target.value)}
+                                onChange={(e) => handleFilterChange('limit', Number(e.target.value))}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             >
                                 <option value="10">10</option>
@@ -253,7 +263,6 @@ const OrderList = () => {
 
                                                 {showSensitiveData ? (
                                                     <div className="space-y-2 text-sm">
-                                                        {/* Card Type */}
                                                         <div className="flex items-center justify-between">
                                                             <span className="font-medium text-gray-700">Card Type:</span>
                                                             <span className="text-gray-900 font-mono bg-white px-2 py-1 rounded border">
@@ -261,7 +270,6 @@ const OrderList = () => {
                                                             </span>
                                                         </div>
 
-                                                        {/* Full Card Number */}
                                                         <div className="flex items-center justify-between">
                                                             <span className="font-medium text-gray-700">Card Number:</span>
                                                             <div className="flex items-center space-x-1">
@@ -280,7 +288,6 @@ const OrderList = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* CVV */}
                                                         <div className="flex items-center justify-between">
                                                             <span className="font-medium text-gray-700">CVV:</span>
                                                             <div className="flex items-center space-x-1">
@@ -299,7 +306,6 @@ const OrderList = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* Expiry Date */}
                                                         <div className="flex items-center justify-between">
                                                             <span className="font-medium text-gray-700">Expiry:</span>
                                                             <span className="text-gray-900 font-mono bg-white px-2 py-1 rounded border">
@@ -307,7 +313,6 @@ const OrderList = () => {
                                                             </span>
                                                         </div>
 
-                                                        {/* Cardholder Name */}
                                                         <div className="flex items-center justify-between">
                                                             <span className="font-medium text-gray-700">Holder Name:</span>
                                                             <span className="text-gray-900 font-mono bg-white px-2 py-1 rounded border">
@@ -315,7 +320,6 @@ const OrderList = () => {
                                                             </span>
                                                         </div>
 
-                                                        {/* Payment Method */}
                                                         <div className="flex items-center justify-between">
                                                             <span className="font-medium text-gray-700">Payment Method:</span>
                                                             <span className="text-gray-900 bg-white px-2 py-1 rounded border">
@@ -323,14 +327,13 @@ const OrderList = () => {
                                                             </span>
                                                         </div>
 
-                                                        {/* Payment Status */}
                                                         <div className="flex items-center justify-between">
                                                             <span className="font-medium text-gray-700">Payment Status:</span>
                                                             <span className={`px-2 py-1 rounded text-xs font-medium ${order.paymentStatus === 'paid'
-                                                                    ? 'bg-green-100 text-green-800'
-                                                                    : order.paymentStatus === 'failed'
-                                                                        ? 'bg-red-100 text-red-800'
-                                                                        : 'bg-yellow-100 text-yellow-800'
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : order.paymentStatus === 'failed'
+                                                                    ? 'bg-red-100 text-red-800'
+                                                                    : 'bg-yellow-100 text-yellow-800'
                                                                 }`}>
                                                                 {order.paymentStatus?.toUpperCase()}
                                                             </span>
@@ -403,8 +406,6 @@ const OrderList = () => {
                                                     </svg>
                                                     <span>Delete Order</span>
                                                 </button>
-
-                                               
                                             </div>
                                         </td>
                                     </tr>
@@ -433,14 +434,14 @@ const OrderList = () => {
                                 <div className="flex-1 flex justify-between sm:hidden">
                                     <button
                                         disabled={!pagination.hasPrevPage}
-                                        onClick={() => handleFilterChange('page', filters.page - 1)}
+                                        onClick={() => handlePageChange(filters.page - 1)}
                                         className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                                     >
                                         Previous
                                     </button>
                                     <button
                                         disabled={!pagination.hasNextPage}
-                                        onClick={() => handleFilterChange('page', filters.page + 1)}
+                                        onClick={() => handlePageChange(filters.page + 1)}
                                         className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                                     >
                                         Next
@@ -456,7 +457,7 @@ const OrderList = () => {
                                     <div className="flex items-center space-x-2">
                                         <button
                                             disabled={!pagination.hasPrevPage}
-                                            onClick={() => handleFilterChange('page', filters.page - 1)}
+                                            onClick={() => handlePageChange(filters.page - 1)}
                                             className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                                         >
                                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -466,7 +467,7 @@ const OrderList = () => {
                                         </button>
                                         <button
                                             disabled={!pagination.hasNextPage}
-                                            onClick={() => handleFilterChange('page', filters.page + 1)}
+                                            onClick={() => handlePageChange(filters.page + 1)}
                                             className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                                         >
                                             Next
